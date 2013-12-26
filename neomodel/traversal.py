@@ -104,7 +104,6 @@ class AstBuilder(object):
             'ident': self._create_ident(),
             'rhs': target['name'],
         }
-
         match = {
             'match': [rel_to_traverse],
             'name': target['name'],
@@ -129,7 +128,7 @@ class AstBuilder(object):
             where_clause.append(category_rel_ident + '.__instance__! = true')
 
         return match, where_clause
-
+    
     def _find_map(self, target_map, rel_manager):
         targets = []
         # find matching rel definitions
@@ -139,6 +138,10 @@ class AstBuilder(object):
                 if isinstance(manager, (RelationshipDefinition)):
                     p = manager.definition
                     p['name'] = rel_manager
+                    # XXX This fix is in an inappropriate place
+                    # however, it does bring back the required functionality 
+                    # This ensures definition['target_map'] exists 
+                    manager.build_target_map()
                     # add to possible targets
                     targets.append(p)
 
@@ -146,8 +149,8 @@ class AstBuilder(object):
             t_list = ', '.join([t_cls.__name__ for t_cls, _ in target_map.items()])
             raise AttributeError("No such rel manager {0} on {1}".format(
                 rel_manager, t_list))
-
         # return as list if more than one
+        print "targets: \n   {}".format(targets)
         return targets if len(targets) > 1 else targets[0]
 
     def _where_node(self, ident_prop, op, value):

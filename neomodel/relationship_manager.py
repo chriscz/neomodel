@@ -251,8 +251,9 @@ class RelationshipDefinition(object):
             else:
                 module = import_module(namespace).__name__
         return getattr(sys.modules[module], name)
+    
 
-    def build_manager(self, origin, name):
+    def _retrieve_node_classes(self):
         # get classes for target
         if isinstance(self.node_class, list):
             node_classes = [self._lookup(cls) if isinstance(cls, (str,)) else cls
@@ -260,10 +261,24 @@ class RelationshipDefinition(object):
         else:
             node_classes = [self._lookup(self.node_class)
                 if isinstance(self.node_class, (str,)) else self.node_class]
+        return node_classes
 
-        # build target map
+    def _build_target_map(self, node_classes):
         self.definition['target_map'] = dict(zip([camel_to_upper(c.__name__)
                 for c in node_classes], node_classes))
+
+    def build_target_map(self):
+        # caching this value like this may have a negative impact
+        # when a change occurs to the node classes in the mean time
+        # however, since models are most likely stored in classes
+        # this shouldn't be an issue 
+        if 'target_map' not in self.definition:
+            node_classes        = self._retrieve_node_classes()
+            # build target map
+            self._build_target_map(node_classes)
+
+    def build_manager(self, origin, name):
+        self.build_target_map()
         rel = self.manager(self.definition, origin)
         rel.name = name
         return rel
