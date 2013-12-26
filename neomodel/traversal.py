@@ -150,7 +150,6 @@ class AstBuilder(object):
             raise AttributeError("No such rel manager {0} on {1}".format(
                 rel_manager, t_list))
         # return as list if more than one
-        print "targets: \n   {}".format(targets)
         return targets if len(targets) > 1 else targets[0]
 
     def _where_node(self, ident_prop, op, value):
